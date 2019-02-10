@@ -75,9 +75,7 @@
             document.addEventListener( 'mousemove', render, false );
 
             function render(){
-                renderer.render(scene,camera);
-                console.log("render");
-
+                renderer.render(scene,camera);                
             }
 
             function onWindowResize() {
@@ -141,8 +139,40 @@
 
 		    }
 
-          
+         
 
+
+			var gui=buildGUI();
+		
+
+          
+		    var importFBXButton = { ImportModel:function(){ 
+
+		    	//Imports fbx from local of user
+		    	importFBX(function(object){
+
+		    		//Remove previos object if exists
+		    		if(objectGroup!==undefined)
+		    			scene.remove(objectGroup);
+
+		    		objectGroup=object;
+		    		scene.add(objectGroup)
+		    		fixCameraToObject();
+		    		textureController.updateObjects(objectGroup.children);
+		    		controls.update();
+		    		render();
+		    		
+		          		            	         
+		    	});
+
+		    }};
+			gui.add(importFBXButton,'ImportModel');
+
+			lightController(gui,light);
+
+			sceneController(gui, scene);
+
+			var textureController=new textureController(gui);
 
         </script>
     </body>
