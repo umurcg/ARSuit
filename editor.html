@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+   
+
+    
+    <script src="three.js/three.js"></script>
+    <script src="three.js/OrbitControls.js"></script>
+    <script src="three.js/inflate.min.js"></script>
+    <script src="three.js/FBXLoader.js"></script>    
+    <script src="arsuit.js"></script>
+    <script src="dat.gui.min.js"></script>
+    <script src="gui.js"></script>
+    <head>
+
+
+    
+    </head>
+    <body ontouchstart="">
+       
+        
+    
+        <script>
+
+            var camera, scene, renderer, objectGroup, material, controls, light, raycaster ;
+            createScene();
+                              
+            function createScene() {
+
+
+                // Renderer.
+                renderer = new THREE.WebGLRenderer({antialias:true});
+                //renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setSize(window.innerWidth, window.innerHeight);
+
+                renderer.domElement.onmouseover=()=>{controls.enabled=true};
+                renderer.domElement.onmouseout=()=>{controls.enabled=false};
+
+                // Add renderer to page
+                document.body.appendChild(renderer.domElement);
+
+                // Create camera.
+                camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
+                camera.position.z = -1;
+
+                // Create scene.
+                scene = new THREE.Scene();
+                scene.background=new THREE.Color(0xffffff);
+
+                //Orbit controls
+                controls = new THREE.OrbitControls( camera );
+                controls.enabled=false;
+
+                // Create ambient light and add to scene.
+                light = new THREE.DirectionalLight( 0xffffff, 0.5 );
+                scene.add(light);
+
+                //Test cube
+				// scene.add( new THREE.Mesh( new THREE.BoxGeometry( 1, 1, 1 ), new THREE.MeshLambertMaterial( {color: 0x00ff00} ) ) );
+
+                // Add listener for window resize.
+                window.addEventListener('resize', onWindowResize, false);
+
+                
+                raycaster=new THREE.Raycaster();
+                
+
+                render();
+            }
+
+
+
+            document.addEventListener( 'mousedown', render, false );
+            document.addEventListener( 'wheel', render, false );
+            document.addEventListener( 'mousemove', render, false );
+
+            function render(){
+                renderer.render(scene,camera);
+                console.log("render");
+
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+
+
+            //Cmpute merged bounding box of group with calculating all bounding box of child objects
+			THREE.Group.prototype.computeBoundingBox=function(){
+				var unionBox=new THREE.Box3();
+				var children=this.children;
+				for(c in children){
+					var child=children[c];
+					if(child instanceof THREE.Mesh || child instanceof THREE.Group){
+						var box=child.computeBoundingBox();
+						if(box===null)
+							continue;
+						unionBox.union(box);
+					}
+				}
+
+				//Assign bounding box to this group
+				this.boundingBox=unionBox;
+				return unionBox;
+			}
+			              
+			//Computes boundingg box of mesh
+			THREE.Mesh.prototype.computeBoundingBox=function(){
+				if(this.geometry===undefined){
+					return null;
+				}
+				this.geometry.computeBoundingBox();
+				var box= this.geometry.boundingBox;
+				this.boundingBox=box;
+				return box;
+			}
+					    
+			//Sets camera as object will fit to camera view bounds					    
+		    function fixCameraToObject(){
+
+		        
+		        var boundingBox=objectGroup.computeBoundingBox();
+				var diagonal=new THREE.Vector3().subVectors(boundingBox.max,boundingBox.min);
+				var maxDim=diagonal.length();			
+
+		        //Set z position to 3/2 max Dimension
+		        camPos= new THREE.Vector3(0,0,maxDim*3/2);
+
+		        //Move both camera to max dim position
+		        camera.position.copy(camPos)
+		       
+
+		        //Set perspective camera far and near values
+		        camera.far=maxDim*4;
+		        camera.near=maxDim/100;
+		        camera.updateProjectionMatrix();
+		        render();		        
+
+		    }
+
+          
+
+
+        </script>
+    </body>
+</html>
