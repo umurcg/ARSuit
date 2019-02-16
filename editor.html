@@ -11,6 +11,7 @@
     <script src="arsuit.js"></script>
     <script src="dat.gui.min.js"></script>
     <script src="gui.js"></script>
+    <script src="three.js/GLTFExporter.js"></script>
     <head>
 
 
@@ -22,7 +23,7 @@
     
         <script>
 
-            var camera, scene, renderer, objectGroup, material, controls, light, raycaster ;
+            var camera, scene, renderer, objectGroup,  controls, light ;
             createScene();
                               
             function createScene() {
@@ -62,8 +63,6 @@
                 window.addEventListener('resize', onWindowResize, false);
 
                 
-                raycaster=new THREE.Raycaster();
-                
 
                 render();
             }
@@ -84,64 +83,7 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
             }
 
-
-
-            //Cmpute merged bounding box of group with calculating all bounding box of child objects
-			THREE.Group.prototype.computeBoundingBox=function(){
-				var unionBox=new THREE.Box3();
-				var children=this.children;
-				for(c in children){
-					var child=children[c];
-					if(child instanceof THREE.Mesh || child instanceof THREE.Group){
-						var box=child.computeBoundingBox();
-						if(box===null)
-							continue;
-						unionBox.union(box);
-					}
-				}
-
-				//Assign bounding box to this group
-				this.boundingBox=unionBox;
-				return unionBox;
-			}
-			              
-			//Computes boundingg box of mesh
-			THREE.Mesh.prototype.computeBoundingBox=function(){
-				if(this.geometry===undefined){
-					return null;
-				}
-				this.geometry.computeBoundingBox();
-				var box= this.geometry.boundingBox;
-				this.boundingBox=box;
-				return box;
-			}
-					    
-			//Sets camera as object will fit to camera view bounds					    
-		    function fixCameraToObject(){
-
-		        
-		        var boundingBox=objectGroup.computeBoundingBox();
-				var diagonal=new THREE.Vector3().subVectors(boundingBox.max,boundingBox.min);
-				var maxDim=diagonal.length();			
-
-		        //Set z position to 3/2 max Dimension
-		        camPos= new THREE.Vector3(0,0,maxDim*3/2);
-
-		        //Move both camera to max dim position
-		        camera.position.copy(camPos)
-		       
-
-		        //Set perspective camera far and near values
-		        camera.far=maxDim*4;
-		        camera.near=maxDim/100;
-		        camera.updateProjectionMatrix();
-		        render();		        
-
-		    }
-
-         
-
-
+  
 			var gui=buildGUI();
 		
 
@@ -156,8 +98,12 @@
 		    			scene.remove(objectGroup);
 
 		    		objectGroup=object;
+
+
+		    
+
 		    		scene.add(objectGroup)
-		    		fixCameraToObject();
+		    		fixCameraToObject(camera,objectGroup);
 		    		textureController.updateObjects(objectGroup.children);
 		    		controls.update();
 		    		render();
@@ -172,15 +118,53 @@
 
 			sceneController(gui, scene);
 
+
 			var textureController=new textureController(gui);
 
-			
+			var saveController={
+				saveScene:function(){
+					
+					// Instantiate a exporter
+					var exporter = new THREE.GLTFExporter();
 
-			function saveScene(){
-				var exporter = new THREE.SceneExporter();
-				var sceneJson = JSON.stringify(exporter.parse(scene));
-				download(sceneJson,"scene","txt");
+					// Parse the input and generate the glTF output
+					exporter.parse( objectGroup.children, function ( gltf ) {
+
+
+						var saveFile=gltf;
+
+						//save background color because gltf doesnt save it
+						saveFile.background=scene.background
+						saveFile.lightIntensity=light.intensity;
+						saveFile.lightColor=light.color;
+						saveFile.lightPosition=light.position;
+
+						saveFile.objBumpMaps={};
+
+						for(m in objectGroup.children){
+
+		    				var obj=objectGroup.children[m];
+		    				var bumpMap=obj.material.bumpMap;
+		    				if(bumpMap===null)
+		    					continue;
+		    				
+		    				saveFile.objBumpMaps[obj.uuid]=bumpMap.toJSON();
+
+		    				
+		    			}
+
+
+					
+
+						var json=JSON.stringify(saveFile)
+						
+						download(json,"scene.json","txt");
+					} );
+					
+				}
 			}
+
+			gui.add(saveController,"saveScene");
 
 			// Function to download data to a file
 			function download(data, filename, type) {

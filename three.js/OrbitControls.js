@@ -195,6 +195,8 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			}
 
+		
+
 			scale = 1;
 
 			// update condition is:

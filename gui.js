@@ -74,6 +74,8 @@ function sceneController(gui, scene){
 }
 
 function textureController(gui){
+
+	
 	var textureFolder=gui.addFolder("Texture Controller");
 
 
