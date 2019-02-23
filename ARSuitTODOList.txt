@@ -1,0 +1,38 @@
+Toplanti notlari
+
+    Faz1 Tasks
+        Data Structure olusturulacak, jsonlar ayri sekilde
+        Basic Scene
+        GUI dat kullanilacak
+        Maps, Texture,  Geometry, Mesh, Scene, Xcene
+        Uc boyutlu kup
+        WebGL2 kullanilacak
+        Camera setter
+        Canvas sizei responsive 
+            
+    Faz2 Tasks
+        UI hazirlama
+        Farkli material tipleri
+        UV Viewer
+        Material parametreleri
+        2 Farkli orbit controller mode
+        Perspective,Ortographic Camera
+        XScene, Scene ozellikleri
+        Loading logosu, Scene logosu
+
+    Faz3 Tasks
+        Importer gelistirme (Format)
+        Adminin user yetkilendirmesi
+        Viewer
+        Mobile Inputlar
+        Mobile screenine texture boyutu farki
+
+    Faz4 Tasks
+        Model json gzip/broatli ile ziplesini 
+
+    Ek notlar:
+        Model scaling
+        Texture map generation
+
+
+
