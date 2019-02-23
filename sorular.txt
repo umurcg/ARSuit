@@ -1,0 +1,4 @@
+fbx ten material aktarilacak mi?
+texture tiplerini tartis
+image import edilirken her texture tipi ayri ayri import mu edilecek?
+hangi material parametreleri customazible olacak?
